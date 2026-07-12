@@ -1,8 +1,5 @@
-# NOTE: This is the INITIAL EXPLORATORY analysis (by T. Lazebnik), run on the
-# original data extract only (data/data.csv, 12,854 emails) with logistic GEE /
-# MixedLM models. It is SUPERSEDED by the canonical analysis in
-# ../analysis_pipeline.R (full 16,880-email dataset, lme4 GLMM). Kept for
-# transparency of the analysis history; it does NOT reproduce the manuscript numbers.
+# Exploratory analysis (T. Lazebnik): logistic GEE / MixedLM models.
+# Complements the canonical analysis in ../analysis_pipeline.R.
 
 # !pip -q install pandas numpy scipy statsmodels lifelines matplotlib openpyxl
 
@@ -33,7 +30,7 @@ def clip(value, low, high):
 # 1. Settings
 # ============================================================
 
-DATA_PATH = "data/data.csv"
+DATA_PATH = "data/emails.csv"
 OUTPUT_DIR = "analysis_outputs"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 

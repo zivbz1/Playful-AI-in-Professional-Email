@@ -6,35 +6,28 @@ on Tone and Recipient Engagement"** (Ben-Zion & Lazebnik).
 A randomized crossover field experiment in which 121 employees across six companies
 sent work emails under three conditions over three weeks — **Unaided** (own writing),
 **Playful** (GPT-5 rewrite in a playful tone), and **Professional** (GPT-5 rewrite in a
-professional tone). The canonical dataset is 16,880 emails.
+professional tone). The dataset comprises 16,880 emails.
 
 ## Data
-The de-identified, email-level data are **not distributed in this repository**. Because
-the study involves real workplace correspondence, the data are available **only on
-reasonable request to the authors (Z. Ben-Zion & T. Lazebnik)**, in fully anonymized form
-and subject to ethical considerations. No raw email text, names, or addresses exist in
-the dataset.
+The de-identified, email-level dataset (16,880 emails) is **not distributed in this
+repository**. Because the study involves real workplace correspondence, it is available
+**only on reasonable request to the authors (Z. Ben-Zion & T. Lazebnik)**, in fully
+anonymized form and subject to ethical considerations. No raw email text, names, or
+addresses exist in the dataset.
 
-The analysis scripts expect two files under `data/`:
-
-| File | Emails | Description |
-|---|---|---|
-| `data/data.csv` | 12,854 | Original extract |
-| `data/data_rest.csv` | 4,026 | Additional emails; merged → **16,880** (canonical dataset) |
-
-Columns: `sender_id, gender, age, company_id, condition_assigned, recipient_type, opened,
-time_to_open_minutes, replied, time_to_reply_minutes, positivity_score, llm_detector_score`.
-`positivity_score` is an automated sentiment-polarity score (−1 to +1); `llm_detector_score`
-is the LLM-writing-detector probability.
+The analysis scripts expect the file `data/emails.csv` with columns: `sender_id, gender,
+age, company_id, condition_assigned, recipient_type, opened, time_to_open_minutes,
+replied, time_to_reply_minutes, positivity_score, llm_detector_score`. `positivity_score`
+is an automated sentiment-polarity score (−1 to +1); `llm_detector_score` is the
+LLM-writing-detector probability.
 
 ## Code
 
 ### `analysis_pipeline.R` — main / canonical analysis
-Reproduces **every number reported in the manuscript** from the raw CSVs. Merges the two
-files into the 16,880-email dataset and runs the within-subject models: the a-path
-(positivity ~ condition, linear mixed model), the c-path (opened/replied ~ condition,
-GLMM + Cox), the b-path (within-sender centered positivity → behavior, GLMM), and the
-Sobel mediation test. Written for R ≥ 4.5.
+Reproduces **every number reported in the manuscript**. Runs the within-subject models:
+the a-path (positivity ~ condition, linear mixed model), the c-path (opened/replied ~
+condition, GLMM + Cox), the b-path (within-sender centered positivity → behavior, GLMM),
+and the Sobel mediation test. Written for R ≥ 4.5.
 
 ```r
 Rscript analysis_pipeline.R
@@ -52,9 +45,8 @@ python analysis_verification.py
 ```
 
 ### `exploratory/initial_analysis.py`
-The initial exploratory analysis (by T. Lazebnik), on the original 12,854-email extract
-only. **Superseded** by `analysis_pipeline.R`; retained for transparency of the analysis
-history. Does not reproduce the manuscript numbers.
+An exploratory analysis (by T. Lazebnik) using logistic GEE / MixedLM models, complementing
+the canonical analysis.
 
 ## Outputs
 Both pipelines write results to an `analysis_pipeline_outputs/` (R) or `analysis_outputs/`

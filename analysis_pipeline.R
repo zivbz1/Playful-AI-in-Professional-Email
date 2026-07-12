@@ -1,14 +1,12 @@
 # ==============================================================================
-# FUNNY EMAILS - CANONICAL ANALYSIS PIPELINE (raw data -> final outputs)
+# PLAYFUL AI IN PROFESSIONAL EMAIL — ANALYSIS PIPELINE
 # Ben-Zion & Lazebnik | Nature Human Behaviour
 # ==============================================================================
 # OFFICIAL analysis script for Code Availability. Reproduces every number in the
-# manuscript. Companion Python verification: analysis_pipeline.py
+# manuscript. Companion Python verification: analysis_verification.py
 #
-# INPUT (raw):
-#   analysis_outputs_data/data.csv           (12,854 emails)
-#   analysis_outputs_data_rest/data_rest.csv ( 4,026 emails)
-#   -> merged canonical dataset: 16,880 emails, 121 senders
+# INPUT:
+#   data/emails.csv   (16,880 emails, 121 senders)
 #
 # DESIGN: within-subject randomized crossover. Every sender serves as their own
 # control across three conditions (no_llm / professional_llm / fun_llm).
@@ -38,12 +36,8 @@ dir.create(OUT, showWarnings = FALSE)
 CENSOR_OPEN  <- 14 * 1440    # 14 days (minutes)
 CENSOR_REPLY <- 40 * 1440    # 40 days (minutes)
 
-# ── 1. LOAD + MERGE RAW DATA -> 16,880 ───────────────────────────────────────
-orig <- read_csv("data/data.csv", show_col_types = FALSE)
-rest <- read_csv("data/data_rest.csv", show_col_types = FALSE)
-shared <- intersect(names(orig), names(rest))
-
-df <- bind_rows(orig[shared], rest[shared]) %>%
+# ── 1. LOAD DATA ─────────────────────────────────────────────────────────────
+df <- read_csv("data/emails.csv", show_col_types = FALSE) %>%
   mutate(
     condition  = factor(condition_assigned, levels = c("no_llm", "professional_llm", "fun_llm")),
     recip_type = factor(recipient_type, levels = c("internal", "external")),
@@ -56,7 +50,7 @@ df <- bind_rows(orig[shared], rest[shared]) %>%
 
 sink(file.path(OUT, "canonical_results.txt"), split = TRUE)
 cat("================================================================\n")
-cat("CANONICAL MERGED DATASET\n")
+cat("CANONICAL DATASET\n")
 cat(sprintf("N emails = %d | N senders = %d | N companies = %d\n",
             nrow(df), n_distinct(df$sender), n_distinct(df$company)))
 print(table(df$condition))

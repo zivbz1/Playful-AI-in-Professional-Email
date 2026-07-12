@@ -1,14 +1,12 @@
 """
 ================================================================================
-FUNNY EMAILS — CANONICAL ANALYSIS PIPELINE (raw data -> final outputs)
+PLAYFUL AI IN PROFESSIONAL EMAIL — VERIFICATION PIPELINE
 Ben-Zion & Lazebnik | Nature Human Behaviour
 ================================================================================
 Single reproducible pipeline for Code Availability.
 
-INPUT (raw):
-    analysis_outputs_data/data.csv          (12,854 emails)
-    analysis_outputs_data_rest/data_rest.csv ( 4,026 emails)
-    -> merged canonical dataset: 16,880 emails, 121 senders
+INPUT:
+    data/emails.csv   (16,880 emails, 121 senders)
 
 OUTPUT:
     analysis_pipeline_outputs/canonical_results.txt   (all numbers used in the paper)
@@ -57,12 +55,9 @@ def stars(p):
     return "***" if p < .001 else "**" if p < .01 else "*" if p < .05 else "+" if p < .10 else ""
 
 # ============================================================
-# 1. LOAD + MERGE RAW DATA -> 16,880
+# 1. LOAD DATA
 # ============================================================
-orig = pd.read_csv("data/data.csv")
-rest = pd.read_csv("data/data_rest.csv")
-shared = [c for c in orig.columns if c in rest.columns]
-df = pd.concat([orig[shared], rest[shared]], ignore_index=True)
+df = pd.read_csv("data/emails.csv")
 
 # types
 for c in ["sender_id", "company_id", "condition_assigned", "recipient_type", "gender"]:
@@ -79,7 +74,7 @@ df["t_open"] = np.where(df["opened"] == 1, df["time_to_open_minutes"], CENSOR_OP
 df["t_reply"] = np.where(df["replied"] == 1, df["time_to_reply_minutes"], CENSOR_REPLY)
 
 log("=" * 78)
-log("CANONICAL MERGED DATASET")
+log("CANONICAL DATASET")
 log("=" * 78)
 log(f"N emails  = {len(df)}")
 log(f"N senders = {df['sender_id'].nunique()}")
