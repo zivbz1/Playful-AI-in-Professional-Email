@@ -1,0 +1,9 @@
+# outputs
+analysis_pipeline_outputs/
+analysis_outputs/
+__pycache__/
+*.pyc
+.RData
+.Rhistory
+# never commit data
+data/*.csv
