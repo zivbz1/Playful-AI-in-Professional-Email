@@ -44,10 +44,6 @@ python analysis_verification.py
 # deps: pandas, numpy, scipy, statsmodels, lifelines
 ```
 
-### `exploratory/initial_analysis.py`
-An exploratory analysis (by T. Lazebnik) using logistic GEE / MixedLM models, complementing
-the canonical analysis.
-
 ## Outputs
 Both pipelines write results to an `analysis_pipeline_outputs/` (R) or `analysis_outputs/`
 (Python) directory: descriptive tables, model coefficients, the mediation results, and
