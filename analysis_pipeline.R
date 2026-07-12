@@ -166,6 +166,59 @@ q <- df %>% mutate(pos_q = ntile(positivity_score, 4)) %>%
 print(q)
 write_csv(q, file.path(OUT, "positivity_quartiles.csv"))
 
+# ── 8. COMPLIANCE SENSITIVITY (per-protocol, LLM-detector) ───────────────────
+# Intent-to-treat analyses above use every email under its assigned condition.
+# Here we repeat the key models on a compliance-restricted sample to check that
+# the null direct effects are not an artifact of imperfect LLM use.
+cat("\n=== COMPLIANCE SENSITIVITY (LLM-detector, threshold 0.50) ===\n")
+THRESH <- 0.50
+df <- df %>% mutate(
+  compliant = if_else(condition == "no_llm",
+                      llm_detector_score <  THRESH,   # unaided: should NOT look LLM-edited
+                      llm_detector_score >= THRESH)    # LLM arms: should look LLM-edited
+)
+crate <- df %>% group_by(condition) %>%
+  summarise(n = n(), n_compliant = sum(compliant), compliance_rate = mean(compliant), .groups = "drop")
+print(crate)
+cat(sprintf("Overall compliance: %.1f%% (%d of %d emails)\n",
+            100*mean(df$compliant), sum(df$compliant), nrow(df)))
+write_csv(crate, file.path(OUT, "compliance_rate_by_condition.csv"))
+
+dc <- df %>% filter(compliant)
+cat(sprintf("Compliance-restricted N = %d | senders = %d\n", nrow(dc), n_distinct(dc$sender)))
+
+# c-path (direct effects) on restricted sample
+for (yv in c("opened", "replied")) {
+  m  <- glmer(reformulate("condition + (1 | sender)", yv), data = dc, family = binomial,
+              control = glmerControl(optimizer = "bobyqa"))
+  m0 <- glmer(reformulate("(1 | sender)", yv), data = dc, family = binomial,
+              control = glmerControl(optimizer = "bobyqa"))
+  cat(sprintf("[compliant] %s omnibus LRT: %s\n", yv, lrt_lab(anova(m0, m))))
+}
+
+# b-path + Sobel mediation on restricted sample
+dc <- dc %>% group_by(sender) %>%
+  mutate(pos_within = positivity_score - mean(positivity_score)) %>% ungroup()
+apath_c <- summary(lmer(positivity_score ~ condition + (1 | sender), data = dc, REML = FALSE))$coefficients
+bp_c <- list()
+for (yv in c("opened", "replied")) {
+  m  <- glmer(reformulate("pos_within + condition + (1 | sender)", yv), data = dc,
+              family = binomial, control = glmerControl(optimizer = "bobyqa"))
+  cf <- summary(m)$coefficients["pos_within", ]
+  bp_c[[yv]] <- c(b = cf["Estimate"], se = cf["Std. Error"])
+  cat(sprintf("[compliant] %s: pos_within OR = %.3f, p = %.3g\n", yv, exp(cf["Estimate"]), cf["Pr(>|z|)"]))
+}
+for (cond in c("professional_llm", "fun_llm")) {
+  a  <- apath_c[paste0("condition", cond), "Estimate"]
+  sa <- apath_c[paste0("condition", cond), "Std. Error"]
+  for (yv in c("opened", "replied")) {
+    b <- bp_c[[yv]]["b.Estimate"]; sb <- bp_c[[yv]]["se.Std. Error"]
+    ind <- a * b; se <- sqrt(a^2*sb^2 + b^2*sa^2); z <- ind/se; p <- 2*pnorm(-abs(z))
+    cat(sprintf("[compliant] %-16s -> %-8s: indirect=%+.4f, Sobel z=%.2f, p=%.3g\n",
+                cond, yv, ind, z, p))
+  }
+}
+
 cat("\n================================================================\n")
 cat("DONE. Outputs in", OUT, "\n")
 sink()

@@ -27,7 +27,8 @@ LLM-writing-detector probability.
 Reproduces **every number reported in the manuscript**. Runs the within-subject models:
 the a-path (positivity ~ condition, linear mixed model), the c-path (opened/replied ~
 condition, GLMM + Cox), the b-path (within-sender centered positivity → behavior, GLMM),
-and the Sobel mediation test. Written for R ≥ 4.5.
+the Sobel mediation test, and a treatment-compliance sensitivity analysis (per-protocol
+restriction using the LLM-writing-detector score). Written for R ≥ 4.5.
 
 ```r
 Rscript analysis_pipeline.R
